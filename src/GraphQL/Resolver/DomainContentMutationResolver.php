@@ -277,20 +277,13 @@ class DomainContentMutationResolver
                 }
             )->first();
 
-            foreach ($fieldErrors['eng-GB'] as $fieldError) {
-                $translatableMessage = $fieldError->getTranslatableMessage();
-                if ($translatableMessage instanceof API\Values\Translation\Plural) {
-                    if (count($fieldError['values']) === 1) {
-                        $message = $translatableMessage->singular;
-                    } else {
-                        $message = $translatableMessage->plural;
-                    }
-                } else {
-                    $message = $translatableMessage->message;
-                }
+            $fieldErrorsList = $fieldErrors['eng-GB'] ?? reset($fieldErrors);
+            $fieldErrorsList = is_array($fieldErrorsList) ? $fieldErrorsList : [$fieldErrorsList];
+            foreach ($fieldErrorsList as $fieldError) {
+                // depending on error instance, values injected in Plural::__toString or Message::__toString
                 $errors[] = sprintf("Field '%s' failed validation: %s",
                     $fieldDefinition->identifier,
-                    $message
+                    (string)$fieldError->getTranslatableMessage()
                 );
             }
         }
